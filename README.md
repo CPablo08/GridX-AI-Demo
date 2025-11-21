@@ -50,7 +50,7 @@ pip3 install -r requirements.txt
 ```
 
 **Note**: On Jetson, some packages may need to be installed via `apt` or may already be included in JetPack:
-- PyQt6: `sudo apt install python3-pyqt6` (or use pip)
+- PyQt5: `sudo apt install python3-pyqt5` (or use pip)
 - OpenCV: Usually pre-installed, but can use `pip install opencv-python`
 - PyTorch: Pre-installed with JetPack
 - Ultralytics: Will auto-download YOLOv8 models on first run
@@ -173,13 +173,13 @@ mkdir -p models
 wget https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt -O models/yolov8n.pt
 ```
 
-### PyQt6 Installation Issues
+### PyQt5 Installation Issues
 
-On some Jetson systems, PyQt6 may need to be installed via apt:
+On some Jetson systems, PyQt5 may need to be installed via apt:
 
 ```bash
 sudo apt update
-sudo apt install python3-pyqt6 python3-pyqt6.qtwidgets
+sudo apt install python3-pyqt5 python3-pyqt5.qtwidgets
 ```
 
 ## Project Structure
@@ -191,7 +191,7 @@ GridX AI Demo App/
 │   ├── __init__.py
 │   ├── camera.py          # Camera capture module
 │   ├── detector.py        # YOLOv8 detection engine
-│   ├── gui.py             # PyQt6 GUI components
+│   ├── gui.py             # PyQt5 GUI components
 │   └── utils.py           # Utility functions (FPS, stats, etc.)
 ├── models/                 # YOLO model storage (auto-created)
 ├── requirements.txt       # Python dependencies
@@ -214,7 +214,7 @@ This project is provided as-is for demonstration purposes.
 ## Credits
 
 - **YOLOv8**: Ultralytics (https://ultralytics.com)
-- **PyQt6**: The Qt Company
+- **PyQt5**: The Qt Company
 - **OpenCV**: OpenCV Foundation
 - **NVIDIA Jetson**: NVIDIA Corporation
 

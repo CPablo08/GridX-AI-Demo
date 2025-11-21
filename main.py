@@ -3,8 +3,8 @@
 import sys
 import time
 import threading
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtCore import QThread, pyqtSignal, QTimer
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 import numpy as np
 
 from app.gui import MainWindow

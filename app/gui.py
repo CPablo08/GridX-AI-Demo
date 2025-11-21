@@ -1,14 +1,14 @@
-"""PyQt6 GUI components for the GridX AI Demo application."""
+"""PyQt5 GUI components for the GridX AI Demo application."""
 
 import os
 import random
 from typing import Optional, List, Dict
 import numpy as np
-from PyQt6.QtWidgets import (
+from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
 )
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QRect
-from PyQt6.QtGui import QPixmap, QImage, QFont, QPainter, QColor, QPen
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QRect
+from PyQt5.QtGui import QPixmap, QImage, QFont, QPainter, QColor, QPen
 from app.utils import get_class_color
 
 
@@ -77,7 +77,7 @@ class VideoWidget(QWidget):
             system_font = QFont()
             system_font.setPixelSize(14)
             painter.setFont(system_font)
-            painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, "Waiting for camera...")
+            painter.drawText(self.rect(), Qt.AlignCenter, "Waiting for camera...")
             return
         
         # Draw live frame
@@ -99,7 +99,7 @@ class VideoWidget(QWidget):
         
         # Scale image to fit widget while maintaining aspect ratio
         scaled_pixmap = QPixmap.fromImage(q_image).scaled(
-            self.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+            self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         
         # Center the image
@@ -135,7 +135,7 @@ class VideoWidget(QWidget):
                 label_text = f"{class_name} {confidence:.1%}"
                 system_font = QFont()
                 system_font.setPixelSize(12)
-                system_font.setWeight(QFont.Weight.DemiBold)
+                system_font.setWeight(QFont.DemiBold)
                 painter.setFont(system_font)
                 fm = painter.fontMetrics()
                 text_width = fm.horizontalAdvance(label_text)
@@ -244,7 +244,7 @@ class PhotoSlideshowWidget(QWidget):
             system_font = QFont()
             system_font.setPixelSize(14)
             painter.setFont(system_font)
-            painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, "No photos captured yet")
+            painter.drawText(self.rect(), Qt.AlignCenter, "No photos captured yet")
             return
         
         # Draw three photos side by side
@@ -276,7 +276,7 @@ class PhotoSlideshowWidget(QWidget):
         
         # Scale image to fit target while maintaining aspect ratio
         scaled_pixmap = QPixmap.fromImage(q_image).scaled(
-            target_size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+            target_size, Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         
         # Center the image in target area
@@ -312,7 +312,7 @@ class PhotoSlideshowWidget(QWidget):
                 label_text = f"{class_name} {confidence:.1%}"
                 system_font = QFont()
                 system_font.setPixelSize(8)
-                system_font.setWeight(QFont.Weight.DemiBold)
+                system_font.setWeight(QFont.DemiBold)
                 painter.setFont(system_font)
                 fm = painter.fontMetrics()
                 text_width = fm.horizontalAdvance(label_text)
@@ -373,10 +373,10 @@ class StatisticsPanel(QWidget):
         title_font = QFont()
         title_font.setPixelSize(16)
         title_font.setWeight(QFont.Weight.DemiBold)
-        title_font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, -0.5)
+        title_font.setLetterSpacing(QFont.AbsoluteSpacing, -0.5)
         title.setFont(title_font)
         title.setStyleSheet("color: #c9d1d9;")
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
         
         # Stats labels
@@ -512,9 +512,9 @@ class MainWindow(QMainWindow):
             logo_label = QLabel()
             logo_pixmap = QPixmap(logo_path)
             # Scale logo to be much bigger (max height ~150px, maintain aspect ratio)
-            scaled_pixmap = logo_pixmap.scaledToHeight(150, Qt.TransformationMode.SmoothTransformation)
+            scaled_pixmap = logo_pixmap.scaledToHeight(150, Qt.SmoothTransformation)
             logo_label.setPixmap(scaled_pixmap)
-            logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            logo_label.setAlignment(Qt.AlignCenter)
             logo_label.setStyleSheet("border: none; background-color: transparent;")
             title_container_layout.addWidget(logo_label)
         
@@ -684,9 +684,9 @@ class MainWindow(QMainWindow):
     
     def keyPressEvent(self, event):
         """Handle keyboard events."""
-        if event.key() == Qt.Key.Key_Escape:
+        if event.key() == Qt.Key_Escape:
             self.close()
-        elif event.key() == Qt.Key.Key_F11:
+        elif event.key() == Qt.Key_F11:
             if self.isFullScreen():
                 self.showNormal()
             else:
