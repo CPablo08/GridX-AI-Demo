@@ -39,10 +39,12 @@ class Camera:
         if not self.cap.isOpened():
             raise RuntimeError(f"Failed to open camera {self.camera_index}")
         
-        # Set camera properties
+        # Set camera properties (optimized for Jetson)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
         self.cap.set(cv2.CAP_PROP_FPS, 30)
+        # Optimize buffer size for Jetson
+        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Minimize latency
         
         # Get actual resolution
         actual_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))

@@ -77,10 +77,12 @@ python3 main.py
 ```
 
 The application will:
-1. Initialize the camera
-2. Load the YOLOv8 model (will download automatically on first run)
-3. Start detection in a separate thread
-4. Display the fullscreen interface
+1. **Automatically optimize** Jetson system settings (power mode, GPU clocks)
+2. **Automatically export to TensorRT** on first run (takes a few minutes, then cached)
+3. Initialize the camera
+4. Load the YOLOv8 model with TensorRT optimization
+5. Start detection in a separate thread
+6. **Automatically launch in fullscreen** for the demo experience
 
 ### Keyboard Controls
 
@@ -89,7 +91,13 @@ The application will:
 
 ### First Run
 
-On the first run, the YOLOv8 model weights will be automatically downloaded (approximately 6MB for YOLOv8n). This happens automatically and may take a minute depending on your internet connection.
+On the first run:
+1. **YOLOv8 model download**: Automatically downloads (approximately 6MB for YOLOv8n)
+2. **TensorRT export**: Automatically exports to TensorRT engine format (takes 2-5 minutes, but only happens once)
+3. **Jetson optimization**: Automatically sets power mode and GPU clocks for maximum performance
+4. **Fullscreen launch**: Automatically launches in fullscreen mode
+
+**Note**: The TensorRT export only happens once. Subsequent runs will load the pre-exported engine instantly.
 
 ## Configuration
 
@@ -121,26 +129,33 @@ self.detector = Detector(model_name='yolov8n.pt', confidence_threshold=0.25)
 
 - `confidence_threshold`: Minimum confidence (0.0 to 1.0) for detections
 
-## TensorRT Optimization (Optional)
+## TensorRT Optimization (Automatic)
 
-For maximum performance on Jetson, you can export the YOLOv8 model to TensorRT:
+The application automatically exports and uses TensorRT on Jetson for maximum performance:
 
-```python
-from ultralytics import YOLO
+- **First Run**: Automatically exports YOLOv8 model to TensorRT engine format (takes a few minutes)
+- **Subsequent Runs**: Automatically loads the pre-exported TensorRT engine for fast startup
+- **Performance**: 2-3x faster inference compared to standard PyTorch
+- **Location**: TensorRT engine files (`.engine`) are saved alongside the model files
 
-model = YOLO('yolov8n.pt')
-model.export(format='engine', device=0)  # Export to TensorRT
-```
-
-Then modify `detector.py` to use the `.engine` file. This provides significant speedup on Jetson hardware.
+The TensorRT optimization happens automatically - no manual steps required!
 
 ## Performance Tips
 
-1. **Use YOLOv8n**: The nano model provides the best balance of speed and accuracy for real-time demos
-2. **Lower Resolution**: Reduce camera resolution if experiencing frame drops
-3. **TensorRT**: Use TensorRT engine for 2-3x speedup
-4. **GPU Mode**: Ensure CUDA is available (should be automatic on Jetson)
-5. **Close Other Apps**: Free up GPU memory by closing other applications
+1. **Automatic Optimizations**: The app automatically:
+   - Sets Jetson to MAXN power mode (maximum performance)
+   - Sets GPU clocks to maximum (`jetson_clocks`)
+   - Uses TensorRT for 2-3x faster inference
+   - Uses FP16 precision for better performance
+   - Optimizes camera buffer for low latency
+
+2. **Use YOLOv8n**: The nano model provides the best balance of speed and accuracy for real-time demos
+
+3. **Fullscreen Mode**: Automatically launches in fullscreen for best demo experience
+
+4. **Close Other Apps**: Free up GPU memory by closing other applications
+
+5. **First Run**: TensorRT export takes a few minutes but only happens once
 
 ## Troubleshooting
 

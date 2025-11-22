@@ -1,5 +1,6 @@
 """YOLOv8 object detection module with TensorRT optimization support."""
 
+import os
 import time
 from typing import List, Dict, Optional
 import numpy as np
@@ -24,25 +25,52 @@ class Detector:
         self._load_model()
     
     def _load_model(self):
-        """Load YOLOv8 model."""
+        """Load YOLOv8 model with TensorRT optimization for Jetson."""
         try:
             print(f"Loading YOLOv8 model: {self.model_name}")
-            self.model = YOLO(self.model_name)
             
-            # Move to GPU if available
+            # Check for existing TensorRT engine file
+            model_base = os.path.splitext(self.model_name)[0]
+            engine_path = f"{model_base}.engine"
+            
             if self.device == 'cuda':
                 print(f"Using CUDA device: {torch.cuda.get_device_name(0)}")
-            
-            # Try to export to TensorRT for Jetson optimization
-            try:
-                if self.device == 'cuda':
-                    print("Attempting TensorRT optimization...")
-                    # Export to TensorRT (this will be done once and cached)
-                    # The model will automatically use TensorRT if available
-                    pass  # TensorRT export can be done manually or on first run
-            except Exception as e:
-                print(f"TensorRT optimization not available: {e}")
-                print("Continuing with standard PyTorch inference...")
+                
+                # Try to load TensorRT engine if it exists
+                if os.path.exists(engine_path):
+                    print(f"Loading TensorRT engine from {engine_path}...")
+                    try:
+                        self.model = YOLO(engine_path)
+                        print("TensorRT engine loaded successfully!")
+                    except Exception as e:
+                        print(f"Failed to load TensorRT engine: {e}")
+                        print("Falling back to PyTorch model...")
+                        self.model = YOLO(self.model_name)
+                else:
+                    # Export to TensorRT for Jetson optimization
+                    print("TensorRT engine not found. Exporting to TensorRT...")
+                    print("This may take a few minutes on first run...")
+                    try:
+                        self.model = YOLO(self.model_name)
+                        # Export to TensorRT engine format
+                        self.model.export(
+                            format='engine',
+                            device=0,
+                            half=True,  # Use FP16 for better performance on Jetson
+                            simplify=True
+                        )
+                        print(f"TensorRT engine exported successfully to {engine_path}")
+                        # Reload the engine
+                        self.model = YOLO(engine_path)
+                        print("TensorRT engine loaded and ready!")
+                    except Exception as e:
+                        print(f"TensorRT export failed: {e}")
+                        print("Continuing with standard PyTorch inference...")
+                        self.model = YOLO(self.model_name)
+            else:
+                # CPU mode - no TensorRT
+                self.model = YOLO(self.model_name)
+                print("Running in CPU mode (no TensorRT)")
             
             print("Model loaded successfully")
         except Exception as e:
@@ -64,8 +92,19 @@ class Detector:
             return []
         
         try:
-            # Run inference
-            results = self.model(frame, conf=self.confidence_threshold, verbose=False)
+            # Run inference with Jetson optimizations
+            inference_kwargs = {
+                'conf': self.confidence_threshold,
+                'verbose': False,
+                'imgsz': 640,  # Standard YOLO input size for best performance
+                'device': self.device
+            }
+            
+            # Use FP16 on GPU for Jetson (TensorRT engines are already FP16)
+            if self.device == 'cuda':
+                inference_kwargs['half'] = True
+            
+            results = self.model(frame, **inference_kwargs)
             
             detections = []
             if len(results) > 0 and results[0].boxes is not None:

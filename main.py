@@ -1,8 +1,10 @@
 """Main application entry point for GridX AI Demo."""
 
 import sys
+import os
 import time
 import threading
+import subprocess
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 import numpy as np
@@ -11,6 +13,47 @@ from app.gui import MainWindow
 from app.camera import Camera
 from app.detector import Detector
 from app.utils import FPSCounter, StatisticsTracker, PerformanceMonitor
+
+
+def optimize_for_jetson():
+    """Optimize system settings for Jetson Orin Nano."""
+    print("Optimizing for Jetson Orin Nano...")
+    
+    try:
+        # Set power mode to MAXN (maximum performance)
+        # This requires sudo, so we'll try but won't fail if it doesn't work
+        try:
+            result = subprocess.run(
+                ['sudo', 'nvpmodel', '-m', '0'],
+                capture_output=True,
+                timeout=5
+            )
+            if result.returncode == 0:
+                print("✓ Power mode set to MAXN (maximum performance)")
+        except (subprocess.TimeoutExpired, FileNotFoundError, PermissionError):
+            print("Note: Could not set power mode (may require sudo or nvpmodel not available)")
+        
+        # Set GPU clock to maximum
+        try:
+            result = subprocess.run(
+                ['sudo', 'jetson_clocks'],
+                capture_output=True,
+                timeout=10
+            )
+            if result.returncode == 0:
+                print("✓ Jetson clocks set to maximum")
+        except (subprocess.TimeoutExpired, FileNotFoundError, PermissionError):
+            print("Note: Could not set jetson_clocks (may require sudo)")
+        
+        # Set CUDA device to use Tensor Cores if available
+        os.environ['CUDA_LAUNCH_BLOCKING'] = '0'  # Non-blocking for better performance
+        os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:512'
+        
+        print("Jetson optimization complete!")
+        
+    except Exception as e:
+        print(f"Warning: Some optimizations may not have been applied: {e}")
+        print("Continuing anyway...")
 
 
 class DetectionThread(QThread):
@@ -70,10 +113,14 @@ class GridXAIDemoApp:
     
     def __init__(self):
         """Initialize application."""
+        # Optimize for Jetson before initializing
+        optimize_for_jetson()
+        
         self.app = QApplication(sys.argv)
         self.window = MainWindow()
         
-        # Initialize components
+        # Initialize components with Jetson-optimized settings
+        # Use 720p for better performance on Jetson
         self.camera = Camera(camera_index=0, width=1280, height=720)
         self.detector = Detector(model_name='yolov8n.pt', confidence_threshold=0.25)
         
